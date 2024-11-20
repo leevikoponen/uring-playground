@@ -21,3 +21,10 @@ priority = 1
 [lints.rust.async_fn_in_trait]
 level = "allow"
 priority = 1
+
+[dependencies]
+fnv = "1"           # fast hasher for small values
+indexmap = "2"      # ordered hash table
+io-uring = "0.7"    # low level `io_uring` bindings
+libc = "0.2"        # `libc` bindings
+thunderdome = "0.6" # typed generational arena
