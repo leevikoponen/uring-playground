@@ -23,8 +23,10 @@ level = "allow"
 priority = 1
 
 [dependencies]
-fnv = "1"           # fast hasher for small values
-indexmap = "2"      # ordered hash table
-io-uring = "0.7"    # low level `io_uring` bindings
-libc = "0.2"        # `libc` bindings
-thunderdome = "0.6" # typed generational arena
+fnv = "1"                # fast hasher for small values
+futures-lite = "2"       # minimal future combinators
+indexmap = "2"           # ordered hash table
+io-uring = "0.7"         # low level `io_uring` bindings
+libc = "0.2"             # `libc` bindings
+pin-project-lite = "0.2" # macro to deal with pinned values
+thunderdome = "0.6"      # typed generational arena
