@@ -1,61 +1,16 @@
+//! Experimental high-level bindings for interfacing with `io_uring` using
+//! hopefully safe `async` code.
+//!
+//! # Notice
+//!
+//! This is a purely experimental project, in large parts serving as a learning
+//! exercise, I give zero guarantees on the actual soudness of the
+//! implementation.
+//!
+//! It should be fine, but working with raw OS primitives is always somewhat
+//! easy to get wrong, especially with how `io_uring` largely centers around the
+//! notion of temporarily transferring ownership to the kernel.
+pub mod batch;
+pub mod future;
 pub mod operation;
 pub mod reactor;
-
-#[cfg(test)]
-mod test {
-    use std::{
-        any::Any,
-        cell::RefCell,
-        io::{Error, Result},
-    };
-
-    use futures_lite::future;
-    use io_uring::{cqueue, opcode, squeue};
-
-    use crate::{
-        operation::{Link2, Oneshot, Operation, SubmitAndWait},
-        reactor::Reactor,
-    };
-
-    struct Nop;
-
-    unsafe impl Operation for Nop {
-        type Output = Result<()>;
-
-        fn build_submission(&mut self) -> squeue::Entry {
-            opcode::Nop::new().build()
-        }
-
-        unsafe fn handle_completion(&mut self, entry: cqueue::Entry) -> Self::Output {
-            if entry.result().is_negative() {
-                return Err(Error::from_raw_os_error(-entry.result()));
-            }
-
-            Ok(())
-        }
-
-        fn take_required_allocations(&mut self) -> Option<Box<dyn Any>> {
-            None
-        }
-    }
-
-    unsafe impl Oneshot for Nop {}
-
-    #[test]
-    fn linked_nops() {
-        let reactor = Reactor::new(64).map(RefCell::new).unwrap();
-        future::block_on(future::or(
-            async {
-                let (first, second) = SubmitAndWait::new(&reactor, Link2::new(Nop, Nop)).await;
-
-                first.and(second).unwrap();
-            },
-            async {
-                loop {
-                    reactor.borrow_mut().wait_for_progress(None).unwrap();
-                    future::yield_now().await;
-                }
-            },
-        ));
-    }
-}

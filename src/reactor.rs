@@ -1,3 +1,5 @@
+//! Bits for submitting tasks and polling for their completion or blocking until
+//! there's progress available as needed.
 use std::{
     any::Any,
     collections::VecDeque,
@@ -20,7 +22,7 @@ use thunderdome::{Arena, Index};
 #[must_use = "an operation handle must be used for something"]
 pub struct OperationId(Index);
 
-/// The tracked state of a operation that gets stored by the reactor.
+/// The tracked state of an operation that's stored by the reactor.
 enum OperationState {
     /// The operation has been submitted and a caller task is waiting to be
     /// notified of progress.
