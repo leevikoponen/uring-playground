@@ -18,6 +18,7 @@ impl Nop {
     }
 }
 
+// SAFETY: no parameters to invalidate
 unsafe impl Operation for Nop {
     type Output = ();
 
@@ -32,4 +33,5 @@ unsafe impl Operation for Nop {
     }
 }
 
+// SAFETY: only returns once
 unsafe impl Oneshot for Nop {}

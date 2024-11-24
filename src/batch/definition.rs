@@ -2,11 +2,11 @@ use std::task::{Context, Poll};
 
 use crate::reactor::Reactor;
 
-/// Abstract representation of multiple [`Oneshot`] operations.
+/// Abstract representation of multiple oneshot operations.
 ///
 /// # Safety
 ///
-/// The same requirements as [`Operation`] apply.
+/// The same requirements as for operations apply.
 #[must_use]
 pub unsafe trait Batch: Unpin {
     /// Handle to store information about submitted entries.

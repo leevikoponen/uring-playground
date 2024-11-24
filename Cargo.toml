@@ -12,6 +12,10 @@ all = "deny"
 nursery = "deny"
 pedantic = "deny"
 
+# we definitely want to document assumptions
+[lints.clippy.undocumented_unsafe_blocks]
+level = "deny"
+
 # `io_uring` is already fundamentally single threaded
 [lints.clippy.future_not_send]
 level = "allow"

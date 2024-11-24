@@ -36,10 +36,10 @@ pub unsafe trait Operation: Unpin {
     fn take_required_allocations(&mut self) -> Option<Box<dyn Any>>;
 }
 
-/// [`Operation`] that guarantees to only produce one completion entry.
+/// Operation that guarantees to only produce one completion entry.
 ///
 /// # Safety
 ///
-/// The same requirements as [`Operation`] apply.
+/// The guarantee must actually hold.
 #[must_use]
 pub unsafe trait Oneshot: Operation {}
