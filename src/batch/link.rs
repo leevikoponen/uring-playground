@@ -89,11 +89,15 @@ macro_rules! define_link_structs {
 
 define_link_structs! {
     /// Wrapper to link two operations together.
+    #[must_use]
     Link2 { first: A, second: B }
     /// Wrapper to link three operations together.
+    #[must_use]
     Link3 { first: A, second: B, third: C }
     /// Wrapper to link four operations together.
+    #[must_use]
     Link4 { first: A, second: B, third: C, fourth: D }
     /// Wrapper to link five operations together.
+    #[must_use]
     Link5 { first: A, second: B, third: C, fourth: D, fifth: E }
 }

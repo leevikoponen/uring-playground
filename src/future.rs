@@ -10,6 +10,7 @@ use std::{
 use crate::{batch::Batch, reactor::Reactor};
 
 /// Future for submitting and waiting for a [`Batch`] to complete.
+#[must_use]
 pub struct SubmitAndWait<'a, B: Batch> {
     reactor: &'a RefCell<Reactor>,
     batch: B,
@@ -37,6 +38,7 @@ impl<B: Batch> Future for SubmitAndWait<'_, B> {
             .handle
             .get_or_insert_with(|| this.batch.submit_entries(&mut reactor, Some(context)));
 
+        // SAFETY: we control the submission above
         unsafe {
             this.batch
                 .poll_progress(handle, &mut reactor, context)

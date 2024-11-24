@@ -7,7 +7,7 @@ use crate::reactor::Reactor;
 /// # Safety
 ///
 /// The same requirements as [`Operation`] apply.
-#[must_use = "operations do nothing unless submitted"]
+#[must_use]
 pub unsafe trait Batch: Unpin {
     /// Handle to store information about submitted entries.
     ///
@@ -19,7 +19,7 @@ pub unsafe trait Batch: Unpin {
     type Output: Unpin;
 
     /// Submit entries onto the specified reactor.
-    #[must_use = "submission handle should be stored somewhere"]
+    #[must_use]
     fn submit_entries(&mut self, reactor: &mut Reactor, context: Option<&Context>) -> Self::Handle;
 
     /// Poll for progress on the operations.
@@ -27,7 +27,7 @@ pub unsafe trait Batch: Unpin {
     /// # Safety
     ///
     /// The caller must ensure that the handle originates from calling
-    /// [`Operation::submit_entries`].
+    /// [`Batch::submit_entries`].
     unsafe fn poll_progress(
         &mut self,
         handle: Self::Handle,

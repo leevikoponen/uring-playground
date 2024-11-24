@@ -5,6 +5,7 @@ use io_uring::{cqueue, squeue};
 use crate::operation::{Oneshot, Operation};
 
 /// Wrapper for [`Oneshot`] that captures the output internally.
+#[must_use]
 pub struct StashOutput<O: Oneshot> {
     operation: O,
     output: Option<O::Output>,
@@ -18,6 +19,7 @@ impl<O: Oneshot> StashOutput<O> {
         }
     }
 
+    #[must_use]
     pub const fn not_finished(&self) -> bool {
         self.output.is_none()
     }

@@ -9,11 +9,13 @@ use io_uring::{cqueue, squeue};
 /// Implementations must ensure that parameters like mutable buffers are
 /// kept alive for the entire duration of the operation, like through
 /// yielding them from [`Operation::take_required_allocations`].
+#[must_use]
 pub unsafe trait Operation: Unpin {
     /// What this operation ultimately produces.
     type Output: Unpin;
 
     /// Build a submission that represents this operation.
+    #[must_use]
     fn build_submission(&mut self) -> squeue::Entry;
 
     /// Process this operation's completion.
@@ -22,6 +24,7 @@ pub unsafe trait Operation: Unpin {
     ///
     /// The caller must ensure that the entry corresponds to the submission
     /// from [`Operation::build_submission`].
+    #[must_use]
     unsafe fn handle_completion(&mut self, entry: cqueue::Entry) -> Self::Output;
 
     /// Take away allocated values that have to live for the duration of the
@@ -29,7 +32,7 @@ pub unsafe trait Operation: Unpin {
     ///
     /// This allows the operation struct to be safely dropped as long as the
     /// caller ensures these values get stashed somewhere.
-    #[must_use = "required allocations must be stashed away somewhere"]
+    #[must_use]
     fn take_required_allocations(&mut self) -> Option<Box<dyn Any>>;
 }
 
@@ -38,4 +41,5 @@ pub unsafe trait Operation: Unpin {
 /// # Safety
 ///
 /// The same requirements as [`Operation`] apply.
+#[must_use]
 pub unsafe trait Oneshot: Operation {}

@@ -7,6 +7,7 @@ use crate::{
 };
 
 /// Singular [`Oneshot`] acting as a [`Batch`].
+#[must_use]
 pub struct Single<O> {
     inner: O,
 }

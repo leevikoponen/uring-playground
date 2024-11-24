@@ -19,7 +19,7 @@ use thunderdome::{Arena, Index};
 /// for a reused index to be confused with some rogue operation pointing at the
 /// same slot.
 #[derive(Debug, Clone, Copy)]
-#[must_use = "an operation handle must be used for something"]
+#[must_use]
 pub struct OperationId(Index);
 
 /// The tracked state of an operation that's stored by the reactor.
@@ -69,7 +69,7 @@ enum OperationState {
 /// Theoretically [`Context::ext`] could be used for this and get injected
 /// inside some kind of `block_on` style call, but I don't want to depend on
 /// unstable features.
-#[must_use = "the reactor does nothing unless it's used to process operations"]
+#[must_use]
 pub struct Reactor {
     ring: IoUring,
     tracked: Arena<OperationState>,
