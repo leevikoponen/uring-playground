@@ -11,15 +11,15 @@ use crate::{future::SubmitAndWait, reactor::Reactor};
 ///
 /// The same requirements as for operations apply.
 #[must_use]
-pub unsafe trait Batch: Unpin {
+pub unsafe trait Batch {
     /// Handle to store information about submitted entries.
     ///
     /// This should allow for working with more than just one entry, such as
     /// with linked operations.
-    type Handle: Copy + Unpin;
+    type Handle;
 
     /// What this operation ultimately produces.
-    type Output: Unpin;
+    type Output;
 
     /// Submit entries onto the specified reactor.
     #[must_use]

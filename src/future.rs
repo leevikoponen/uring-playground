@@ -27,7 +27,11 @@ impl<'reactor, B: Batch> SubmitAndWait<'reactor, B> {
     }
 }
 
-impl<B: Batch> Future for SubmitAndWait<'_, B> {
+impl<B> Future for SubmitAndWait<'_, B>
+where
+    B: Batch + Unpin,
+    B::Handle: Copy + Unpin,
+{
     type Output = B::Output;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {

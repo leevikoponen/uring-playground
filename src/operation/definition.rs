@@ -13,9 +13,9 @@ use crate::batch::{Link2, Single};
 /// kept alive for the entire duration of the operation, like through
 /// yielding them from [`Operation::take_required_allocations`].
 #[must_use]
-pub unsafe trait Operation: Unpin {
+pub unsafe trait Operation {
     /// What this operation ultimately produces.
-    type Output: Unpin;
+    type Output;
 
     /// Build a submission that represents this operation.
     #[must_use]
