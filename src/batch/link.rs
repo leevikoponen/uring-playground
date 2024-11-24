@@ -101,3 +101,25 @@ define_link_structs! {
     #[must_use]
     Link5 { first: A, second: B, third: C, fourth: D, fifth: E }
 }
+
+macro_rules! impl_link_more {
+    ($($old_struct:ident { $($old_field:ident: $old_type:ident),* } => $new_struct:ident { ..$new_field:ident: $new_type:ident })*) => {
+        $(
+            impl<$($old_type: Oneshot),*> $old_struct<$($old_type),*> {
+                /// Add another linked operation.
+                pub fn link_more<$new_type: Oneshot>(self, $new_field: $new_type) -> $new_struct<$($old_type,)* $new_type> {
+                    $new_struct {
+                        $($old_field: self.$old_field,)*
+                        $new_field: StashOutput::new($new_field),
+                    }
+                }
+            }
+        )*
+    };
+}
+
+impl_link_more! {
+    Link2 { first: A, second: B } => Link3 { ..third: C }
+    Link3 { first: A, second: B, third: C } => Link4 { ..fourth: D }
+    Link4 { first: A, second: B, third: C, fourth: D } => Link5 { ..fifth: E }
+}

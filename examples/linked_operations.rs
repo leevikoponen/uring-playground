@@ -13,6 +13,7 @@ fn main() -> Result<()> {
     uring_playground::block_on(&reactor, async {
         Nop::new()
             .link_with(Nop::new())
+            .link_more(Nop::new())
             .build_submission(&reactor)
             .await;
     })
