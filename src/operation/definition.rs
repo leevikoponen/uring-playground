@@ -2,6 +2,8 @@ use std::any::Any;
 
 use io_uring::{cqueue, squeue};
 
+use crate::batch::{Link2, Single};
+
 /// Abstract representation of a singular `io_uring` operation.
 ///
 /// # Safety
@@ -34,6 +36,23 @@ pub unsafe trait Operation: Unpin {
     /// caller ensures these values get stashed somewhere.
     #[must_use]
     fn take_required_allocations(&mut self) -> Option<Box<dyn Any>>;
+
+    /// Link the operation to another.
+    fn link_with<T>(self, another: T) -> Link2<Self, T>
+    where
+        Self: Oneshot + Sized,
+        T: Oneshot,
+    {
+        Link2::new(self, another)
+    }
+
+    /// Convert the operation into a batch.
+    fn into_batch(self) -> Single<Self>
+    where
+        Self: Oneshot + Sized,
+    {
+        Single::new(self)
+    }
 }
 
 /// Operation that guarantees to only produce one completion entry.

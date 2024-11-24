@@ -3,8 +3,8 @@
 use std::{cell::RefCell, io::Result};
 
 use uring_playground::{
-    batch::BatchExt,
-    operation::{Nop, OperationExt},
+    batch::Batch as _,
+    operation::{Nop, Operation as _},
     reactor::Reactor,
 };
 

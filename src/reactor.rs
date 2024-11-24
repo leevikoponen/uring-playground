@@ -3,7 +3,7 @@
 use std::{
     any::Any,
     collections::VecDeque,
-    io::Result,
+    io::{Error, Result},
     task::{Context, Poll, Waker},
     time::Duration,
 };
@@ -250,7 +250,7 @@ impl Reactor {
                     submitter.squeue_wait()?;
                 }
 
-                Ok(count + 1) as Result<usize>
+                Ok::<_, Error>(count + 1)
             })?;
 
         // uncertain what the ideal logic should be, but we definitely want to block if

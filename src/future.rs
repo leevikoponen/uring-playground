@@ -11,14 +11,14 @@ use crate::{batch::Batch, reactor::Reactor};
 
 /// Future for submitting and waiting for a [`Batch`] to complete.
 #[must_use]
-pub struct SubmitAndWait<'a, B: Batch> {
-    reactor: &'a RefCell<Reactor>,
+pub struct SubmitAndWait<'reactor, B: Batch> {
+    reactor: &'reactor RefCell<Reactor>,
     batch: B,
     handle: Option<B::Handle>,
 }
 
-impl<'a, B: Batch> SubmitAndWait<'a, B> {
-    pub const fn new(reactor: &'a RefCell<Reactor>, batch: B) -> Self {
+impl<'reactor, B: Batch> SubmitAndWait<'reactor, B> {
+    pub const fn new(reactor: &'reactor RefCell<Reactor>, batch: B) -> Self {
         Self {
             reactor,
             batch,
@@ -30,18 +30,18 @@ impl<'a, B: Batch> SubmitAndWait<'a, B> {
 impl<B: Batch> Future for SubmitAndWait<'_, B> {
     type Output = B::Output;
 
-    fn poll(self: Pin<&mut Self>, context: &mut Context) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
         let this = self.get_mut();
         let mut reactor = this.reactor.borrow_mut();
 
         let handle = *this
             .handle
-            .get_or_insert_with(|| this.batch.submit_entries(&mut reactor, Some(context)));
+            .get_or_insert_with(|| this.batch.submit_entries(&mut reactor, Some(cx)));
 
         // SAFETY: we control the submission above
         unsafe {
             this.batch
-                .poll_progress(handle, &mut reactor, context)
+                .poll_progress(handle, &mut reactor, cx)
                 .map(|output| {
                     this.handle = None;
                     output

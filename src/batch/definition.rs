@@ -1,6 +1,9 @@
-use std::task::{Context, Poll};
+use std::{
+    cell::RefCell,
+    task::{Context, Poll},
+};
 
-use crate::reactor::Reactor;
+use crate::{future::SubmitAndWait, reactor::Reactor};
 
 /// Abstract representation of multiple oneshot operations.
 ///
@@ -37,4 +40,12 @@ pub unsafe trait Batch: Unpin {
 
     /// Mark operations as ignored as a cancellation step in case of drop.
     fn drop_operations(&mut self, handle: Self::Handle, reactor: &mut Reactor);
+
+    /// Create a submission future.
+    fn build_submission(self, reactor: &RefCell<Reactor>) -> SubmitAndWait<'_, Self>
+    where
+        Self: Batch + Sized,
+    {
+        SubmitAndWait::new(reactor, self)
+    }
 }

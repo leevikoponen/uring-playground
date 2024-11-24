@@ -24,7 +24,7 @@ pub mod reactor;
 /// # Errors
 ///
 /// If [`Reactor::wait_for_progress`] results in an error.
-pub fn block_on<T>(reactor: &RefCell<Reactor>, future: impl IntoFuture<Output = T>) -> Result<T> {
+pub fn block_on<F: IntoFuture>(reactor: &RefCell<Reactor>, future: F) -> Result<F::Output> {
     futures_lite::future::block_on(futures_lite::future::or(
         async { Ok(future.await) },
         async {

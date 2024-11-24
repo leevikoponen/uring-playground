@@ -4,7 +4,7 @@ use io_uring::squeue::Flags;
 
 use crate::{
     batch::Batch,
-    operation::{Oneshot, Operation, StashOutput},
+    operation::{Oneshot, Operation as _, StashOutput},
     reactor::{OperationId, Reactor},
 };
 
