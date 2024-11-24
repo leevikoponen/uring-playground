@@ -58,3 +58,50 @@ unsafe impl<O: Oneshot> Operation for StashOutput<O> {
 
 // SAFETY: the internal operation is oneshot
 unsafe impl<O: Oneshot> Oneshot for StashOutput<O> {}
+
+/// Wrapper for [`Operation`] that transforms the output.
+#[must_use]
+pub struct MapOutput<O, F> {
+    operation: O,
+    function: F,
+}
+
+impl<O, F> MapOutput<O, F> {
+    pub const fn new(operation: O, function: F) -> Self {
+        Self {
+            operation,
+            function,
+        }
+    }
+}
+
+// SAFETY: the internal operation promises safety
+unsafe impl<O, F, T> Operation for MapOutput<O, F>
+where
+    O: Operation,
+    F: FnMut(O::Output) -> T + Unpin,
+    T: Unpin,
+{
+    type Output = T;
+
+    fn build_submission(&mut self) -> squeue::Entry {
+        self.operation.build_submission()
+    }
+
+    unsafe fn handle_completion(&mut self, entry: cqueue::Entry) -> Self::Output {
+        (self.function)(self.operation.handle_completion(entry))
+    }
+
+    fn take_required_allocations(&mut self) -> Option<Box<dyn Any>> {
+        self.operation.take_required_allocations()
+    }
+}
+
+// SAFETY: the internal operation is oneshot
+unsafe impl<O, F, T> Oneshot for MapOutput<O, F>
+where
+    O: Oneshot,
+    F: FnMut(O::Output) -> T + Unpin,
+    T: Unpin,
+{
+}

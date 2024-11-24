@@ -2,6 +2,7 @@ use std::any::Any;
 
 use io_uring::{cqueue, squeue};
 
+use super::wrapper::MapOutput;
 use crate::batch::{Link2, Single};
 
 /// Abstract representation of a singular `io_uring` operation.
@@ -37,13 +38,12 @@ pub unsafe trait Operation: Unpin {
     #[must_use]
     fn take_required_allocations(&mut self) -> Option<Box<dyn Any>>;
 
-    /// Link the operation to another.
-    fn link_with<T>(self, another: T) -> Link2<Self, T>
+    /// Transform the output to another type.
+    fn map_output<F>(self, function: F) -> MapOutput<Self, F>
     where
-        Self: Oneshot + Sized,
-        T: Oneshot,
+        Self: Operation + Sized,
     {
-        Link2::new(self, another)
+        MapOutput::new(self, function)
     }
 
     /// Convert the operation into a batch.
@@ -52,6 +52,15 @@ pub unsafe trait Operation: Unpin {
         Self: Oneshot + Sized,
     {
         Single::new(self)
+    }
+
+    /// Link the operation to another.
+    fn link_with<T>(self, another: T) -> Link2<Self, T>
+    where
+        Self: Oneshot + Sized,
+        T: Oneshot,
+    {
+        Link2::new(self, another)
     }
 }
 

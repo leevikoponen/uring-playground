@@ -6,5 +6,5 @@ mod wrapper;
 pub use self::{
     definition::{Oneshot, Operation},
     general::Nop,
-    wrapper::StashOutput,
+    wrapper::{MapOutput, StashOutput},
 };
