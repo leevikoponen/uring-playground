@@ -114,6 +114,14 @@ pub unsafe trait Batch {
     /// Mark operations as ignored as a cancellation step in case of drop.
     fn drop_operations(&mut self, handle: Self::Handle, reactor: &mut Reactor);
 
+    /// Transform the output to another type.
+    fn map_output<F>(self, function: F) -> MapOutput<Self, F>
+    where
+        Self: Sized,
+    {
+        MapOutput::new(self, function)
+    }
+
     /// Create a submission future.
     fn build_submission(self, reactor: &RefCell<Reactor>) -> SubmitAndWait<'_, Self>
     where

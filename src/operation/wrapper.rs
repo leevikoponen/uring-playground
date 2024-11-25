@@ -65,7 +65,7 @@ unsafe impl<O: Oneshot> Operation for StashOutput<O> {
 // SAFETY: the internal operation is oneshot
 unsafe impl<O: Oneshot> Oneshot for StashOutput<O> {}
 
-/// Wrapper for [`Operation`] that transforms the output.
+/// Wrapper for operations that transforms the output.
 #[must_use]
 pub struct MapOutput<O, F> {
     operation: O,
@@ -85,8 +85,7 @@ impl<O, F> MapOutput<O, F> {
 unsafe impl<O, F, T> Operation for MapOutput<O, F>
 where
     O: Operation,
-    F: FnMut(O::Output) -> T + Unpin,
-    T: Unpin,
+    F: FnMut(O::Output) -> T,
 {
     type Output = T;
 
@@ -107,9 +106,38 @@ where
 unsafe impl<O, F, T> Oneshot for MapOutput<O, F>
 where
     O: Oneshot,
-    F: FnMut(O::Output) -> T + Unpin,
-    T: Unpin,
+    F: FnMut(O::Output) -> T,
 {
+}
+
+// SAFETY: the internal operation promises safety
+unsafe impl<B, F, T> Batch for MapOutput<B, F>
+where
+    B: Batch,
+    F: FnMut(B::Output) -> T,
+{
+    type Handle = B::Handle;
+
+    type Output = T;
+
+    fn submit_entries(&mut self, reactor: &mut Reactor, context: Option<&Context>) -> Self::Handle {
+        self.operation.submit_entries(reactor, context)
+    }
+
+    unsafe fn poll_progress(
+        &mut self,
+        handle: Self::Handle,
+        reactor: &mut Reactor,
+        context: &Context,
+    ) -> Poll<Self::Output> {
+        self.operation
+            .poll_progress(handle, reactor, context)
+            .map(|output| (self.function)(output))
+    }
+
+    fn drop_operations(&mut self, handle: Self::Handle, reactor: &mut Reactor) {
+        self.operation.drop_operations(handle, reactor);
+    }
 }
 
 /// Singular [`Oneshot`] acting as a [`Batch`].
