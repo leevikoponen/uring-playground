@@ -18,6 +18,7 @@ pub mod batch;
 pub mod future;
 pub mod operation;
 pub mod reactor;
+pub mod synchronization;
 
 /// Block on the future by polling it concurrently with driving the reactor.
 ///
