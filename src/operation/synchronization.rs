@@ -1,4 +1,8 @@
-use std::{any::Any, sync::atomic::AtomicU32};
+use std::{
+    any::Any,
+    io::{Error, Result},
+    sync::atomic::AtomicU32,
+};
 
 use io_uring::{cqueue, opcode, squeue};
 
@@ -21,13 +25,19 @@ impl<'futex> FutexWait<'futex> {
 
 // SAFETY: futex pointer is inconsequential for safety
 unsafe impl Operation for FutexWait<'_> {
-    type Output = ();
+    type Output = Result<()>;
 
     fn build_submission(&mut self) -> squeue::Entry {
         opcode::FutexWait::new(self.futex.as_ptr().cast_const(), self.compare.into(), 0, 0).build()
     }
 
-    unsafe fn handle_completion(&mut self, _: cqueue::Entry) -> Self::Output {}
+    unsafe fn handle_completion(&mut self, entry: cqueue::Entry) -> Self::Output {
+        if entry.result().is_negative() {
+            return Err(Error::from_raw_os_error(-entry.result()));
+        }
+
+        Ok(())
+    }
 
     fn take_required_allocations(&mut self) -> Option<Box<dyn Any>> {
         None
@@ -54,13 +64,19 @@ impl<'futex> FutexWake<'futex> {
 
 // SAFETY: futex pointer is inconsequential for safety
 unsafe impl Operation for FutexWake<'_> {
-    type Output = ();
+    type Output = Result<()>;
 
     fn build_submission(&mut self) -> squeue::Entry {
         opcode::FutexWake::new(self.futex.as_ptr().cast_const(), self.count.into(), 0, 0).build()
     }
 
-    unsafe fn handle_completion(&mut self, _: cqueue::Entry) -> Self::Output {}
+    unsafe fn handle_completion(&mut self, entry: cqueue::Entry) -> Self::Output {
+        if entry.result().is_negative() {
+            return Err(Error::from_raw_os_error(-entry.result()));
+        }
+
+        Ok(())
+    }
 
     fn take_required_allocations(&mut self) -> Option<Box<dyn Any>> {
         None

@@ -30,13 +30,19 @@ impl Nop {
 
 // SAFETY: no parameters to invalidate
 unsafe impl Operation for Nop {
-    type Output = ();
+    type Output = Result<()>;
 
     fn build_submission(&mut self) -> squeue::Entry {
         opcode::Nop::new().build()
     }
 
-    unsafe fn handle_completion(&mut self, _: cqueue::Entry) -> Self::Output {}
+    unsafe fn handle_completion(&mut self, entry: cqueue::Entry) -> Self::Output {
+        if entry.result().is_negative() {
+            return Err(Error::from_raw_os_error(-entry.result()));
+        }
+
+        Ok(())
+    }
 
     fn take_required_allocations(&mut self) -> Option<Box<dyn Any>> {
         None

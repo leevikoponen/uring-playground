@@ -4,8 +4,10 @@
 //! The implementations are adapted from memory of example algorithms shown on
 //! the lecture slides of a concurrency course and might very possibly not be
 //! entirely correct.
+#![expect(clippy::missing_errors_doc)]
 use std::{
     cell::{RefCell, UnsafeCell},
+    io::Result,
     ops::{Deref, DerefMut},
     sync::atomic::{AtomicU32, Ordering},
 };
@@ -28,14 +30,14 @@ impl Semaphore {
         }
     }
 
-    pub async fn aqquire(&self, reactor: &RefCell<Reactor>) {
+    pub async fn aqquire(&self, reactor: &RefCell<Reactor>) -> Result<()> {
         loop {
             let count = self.count.load(Ordering::SeqCst);
             if count == 0 {
                 FutexWait::new(&self.count, count)
                     .into_batch()
                     .build_submission(reactor)
-                    .await;
+                    .await?;
 
                 continue;
             }
@@ -48,18 +50,20 @@ impl Semaphore {
             );
 
             if result.is_ok() {
-                return;
+                return Ok(());
             }
         }
     }
 
-    pub async fn release(&self, reactor: &RefCell<Reactor>) {
+    pub async fn release(&self, reactor: &RefCell<Reactor>) -> Result<()> {
         if self.count.fetch_add(1, Ordering::SeqCst) == 0 {
             FutexWake::new(&self.count, 1)
                 .into_batch()
                 .build_submission(reactor)
-                .await;
+                .await?;
         }
+
+        Ok(())
     }
 }
 
@@ -81,7 +85,7 @@ impl<T> Mutex<T> {
         }
     }
 
-    async fn lock(&self, reactor: &RefCell<Reactor>) {
+    async fn lock(&self, reactor: &RefCell<Reactor>) -> Result<()> {
         loop {
             let result = self.state.compare_exchange_weak(
                 Self::STATE_UNLOCKED,
@@ -91,28 +95,30 @@ impl<T> Mutex<T> {
             );
 
             if result.is_ok() {
-                return;
+                return Ok(());
             }
 
             FutexWait::new(&self.state, 1)
                 .into_batch()
                 .build_submission(reactor)
-                .await;
+                .await?;
         }
     }
 
-    async fn unlock(&self, reactor: &RefCell<Reactor>) {
+    async fn unlock(&self, reactor: &RefCell<Reactor>) -> Result<()> {
         if self.state.swap(Self::STATE_UNLOCKED, Ordering::Release) == Self::STATE_LOCKED {
             FutexWake::new(&self.state, 1)
                 .into_batch()
                 .build_submission(reactor)
-                .await;
+                .await?;
         }
+
+        Ok(())
     }
 
-    pub async fn aqquire(&self, reactor: &RefCell<Reactor>) -> LockGuard<'_, T> {
-        self.lock(reactor).await;
-        LockGuard { inner: self }
+    pub async fn aqquire(&self, reactor: &RefCell<Reactor>) -> Result<LockGuard<'_, T>> {
+        self.lock(reactor).await?;
+        Ok(LockGuard { inner: self })
     }
 }
 
@@ -134,8 +140,9 @@ pub struct LockGuard<'mutex, T> {
 }
 
 impl<T> LockGuard<'_, T> {
-    pub async fn release(self, reactor: &RefCell<Reactor>) {
-        self.inner.unlock(reactor).await;
+    pub async fn release(self, reactor: &RefCell<Reactor>) -> Result<()> {
+        self.inner.unlock(reactor).await?;
+        Ok(())
     }
 }
 
@@ -169,37 +176,43 @@ impl ConditionVariable {
         }
     }
 
-    pub async fn wait<T>(&self, reactor: &RefCell<Reactor>, guard: LockGuard<'_, T>) {
+    pub async fn wait<T>(&self, reactor: &RefCell<Reactor>, guard: LockGuard<'_, T>) -> Result<()> {
         self.futex.fetch_add(1, Ordering::SeqCst);
 
-        guard.inner.unlock(reactor).await;
+        guard.inner.unlock(reactor).await?;
 
         FutexWait::new(&self.futex, 1)
             .into_batch()
             .build_submission(reactor)
-            .await;
+            .await?;
 
-        guard.inner.lock(reactor).await;
+        guard.inner.lock(reactor).await?;
+
+        Ok(())
     }
 
-    pub async fn notify_one(&self, reactor: &RefCell<Reactor>) {
+    pub async fn notify_one(&self, reactor: &RefCell<Reactor>) -> Result<()> {
         self.futex.fetch_sub(1, Ordering::SeqCst);
 
         FutexWake::new(&self.futex, 1)
             .into_batch()
             .build_submission(reactor)
-            .await;
+            .await?;
+
+        Ok(())
     }
 
-    pub async fn notify_all(&self, reactor: &RefCell<Reactor>) {
+    pub async fn notify_all(&self, reactor: &RefCell<Reactor>) -> Result<()> {
         let waiters = self.futex.swap(0, Ordering::SeqCst);
         if waiters == 0 {
-            return;
+            return Ok(());
         }
 
         FutexWake::new(&self.futex, waiters)
             .into_batch()
             .build_submission(reactor)
-            .await;
+            .await?;
+
+        Ok(())
     }
 }
