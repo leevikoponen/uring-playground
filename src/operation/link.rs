@@ -6,8 +6,7 @@ use std::task::{Context, Poll};
 use io_uring::squeue::Flags;
 
 use crate::{
-    batch::Batch,
-    operation::{Oneshot, Operation as _, StashOutput},
+    operation::{Batch, Oneshot, Operation as _, StashOutput},
     reactor::{OperationId, Reactor},
 };
 

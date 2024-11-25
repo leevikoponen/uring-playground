@@ -1,5 +1,3 @@
-//! Implementation for using a [`Reactor`] to drive operations with
-//! `async`/`await`.
 use std::{
     cell::RefCell,
     future::Future,
@@ -7,7 +5,7 @@ use std::{
     task::{Context, Poll},
 };
 
-use crate::{batch::Batch, reactor::Reactor};
+use crate::{operation::Batch, reactor::Reactor};
 
 /// Future for submitting and waiting for a [`Batch`] to complete.
 #[must_use]
