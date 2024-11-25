@@ -47,26 +47,9 @@ pub unsafe trait Operation {
     /// Transform the output to another type.
     fn map_output<F>(self, function: F) -> MapOutput<Self, F>
     where
-        Self: Operation + Sized,
+        Self: Sized,
     {
         MapOutput::new(self, function)
-    }
-
-    /// Convert the operation into a batch.
-    fn into_batch(self) -> Single<Self>
-    where
-        Self: Oneshot + Sized,
-    {
-        Single::new(self)
-    }
-
-    /// Link the operation to another.
-    fn link_with<T>(self, another: T) -> Link2<Self, T>
-    where
-        Self: Oneshot + Sized,
-        T: Oneshot,
-    {
-        Link2::new(self, another)
     }
 }
 
@@ -76,7 +59,24 @@ pub unsafe trait Operation {
 ///
 /// The guarantee must actually hold.
 #[must_use]
-pub unsafe trait Oneshot: Operation {}
+pub unsafe trait Oneshot: Operation {
+    /// Convert the operation into a batch.
+    fn into_batch(self) -> Single<Self>
+    where
+        Self: Sized,
+    {
+        Single::new(self)
+    }
+
+    /// Link the operation to another.
+    fn link_with<T>(self, another: T) -> Link2<Self, T>
+    where
+        Self: Sized,
+        T: Oneshot,
+    {
+        Link2::new(self, another)
+    }
+}
 
 /// Abstract representation of multiple oneshot operations.
 ///

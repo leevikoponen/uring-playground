@@ -11,7 +11,7 @@ use std::{
 };
 
 use crate::{
-    operation::{Batch as _, FutexWait, FutexWake, Operation as _},
+    operation::{Batch as _, FutexWait, FutexWake, Oneshot as _},
     reactor::Reactor,
 };
 
