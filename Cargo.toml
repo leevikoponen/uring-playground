@@ -1,10 +1,11 @@
 [package]
 name = "uring-playground"
 description = "Experimental high-level io_uring abstractions"
-version = "0.1.0"
+version = "0.0.0"
 license = "MIT"
 authors = ["Leevi Koponen"]
 edition = "2021"
+publish = false
 
 # loud lints are better than leaving weird code around without justification
 [lints.clippy]
