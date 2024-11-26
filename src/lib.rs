@@ -14,6 +14,7 @@ use std::{cell::RefCell, future::IntoFuture, io::Result};
 
 use crate::reactor::Reactor;
 
+pub mod adapter;
 pub mod operation;
 pub mod reactor;
 pub mod synchronization;

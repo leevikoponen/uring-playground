@@ -20,7 +20,7 @@ use thunderdome::{Arena, Index};
 /// same slot.
 #[derive(Debug, Clone, Copy)]
 #[must_use]
-pub struct OperationId(Index);
+pub struct OperationId(pub(crate) Index);
 
 /// The tracked state of an operation that's stored by the reactor.
 enum OperationState {
