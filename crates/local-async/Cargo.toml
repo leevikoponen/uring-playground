@@ -1,0 +1,15 @@
+[package]
+name = "local-async"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+futures-lite.workspace = true
+index-heap.workspace = true
+scopeguard.workspace = true
+slab.workspace = true
+
+[lints]
+workspace = true

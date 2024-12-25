@@ -1,0 +1,32 @@
+[package]
+name = "uring-playground"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+fnv.workspace = true
+futures-lite.workspace = true
+indexmap.workspace = true
+io-uring.workspace = true
+libc.workspace = true
+local-async.workspace = true
+memmap2.workspace = true
+pin-project.workspace = true
+slab.workspace = true
+
+[dependencies.futures-concurrency]
+workspace = true
+optional = true
+
+[dependencies.nix]
+workspace = true
+features = ["fs", "net", "poll"]
+
+[features]
+default = ["extra"]
+extra = ["dep:futures-concurrency"]
+
+[lints]
+workspace = true

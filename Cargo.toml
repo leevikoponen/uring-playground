@@ -1,0 +1,65 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+license = "ISC"
+publish = false
+
+[workspace.dependencies]
+fnv = "1"  # fast hasher for very small values
+futures-concurrency = "7"  # alternative primitives to traditional executors
+futures-lite = "2"  # minimal set of future and stream combinators
+index-heap.path = "crates/index-heap"  # priority queue with direct access
+indexmap = "2"  # ordered hash table
+io-uring = "0.7"  # low level io_uring bindings
+libc = "0.2"  # raw libc bindings
+local-async.path = "crates/local-async"  # our basic thread local utilities
+memmap2 = "0.9"  # wrapper around memory mappings from the kernel
+nix = "0.31"  # nice wrappers for system headers
+pin-project = "1"  # macro for safely dealing with pinned values
+scopeguard = "1"  # helper to avoid manual future implementations
+slab = "0.4"  # slab allocator for uniform types
+uring-playground.path = "crates/uring-playground"  # the primary crate itself
+
+# going a little overboard with loud lints is my jam
+[workspace.lints.clippy]
+all = "warn"
+allow_attributes = "warn"
+allow_attributes_without_reason = "warn"
+as_conversions = "warn"
+clone_on_ref_ptr = "warn"
+if_then_some_else_none = "warn"
+indexing_slicing = "warn"
+missing_asserts_for_indexing = "warn"
+module_name_repetitions = "warn"
+multiple_unsafe_ops_per_block = "warn"
+nursery = "warn"
+partial_pub_fields = "warn"
+pedantic = "warn"
+ref_patterns = "warn"
+renamed_function_params = "warn"
+rest_pat_in_fully_bound_structs = "warn"
+same_name_method = "warn"
+self_named_module_files = "warn"
+single_char_lifetime_names = "warn"
+undocumented_unsafe_blocks = "warn"
+unnecessary_safety_comment = "warn"
+unnecessary_safety_doc = "warn"
+unnecessary_self_imports = "warn"
+unneeded_field_pattern = "warn"
+unused_result_ok = "warn"
+unused_trait_names = "warn"
+unwrap_used = "warn"
+
+# io_uring is already fundamentally single threaded
+[workspace.lints.clippy.future_not_send]
+level = "allow"
+priority = 1
+
+# current limitations primarily relate to send bounds
+[workspace.lints.rust.async_fn_in_trait]
+level = "allow"
+priority = 1
